@@ -1,0 +1,55 @@
+{
+  "name": "node-periphery-local",
+  "version": "1.0.0",
+  "description": "Сервис для работы с локальным оборудованием",
+  "main": "index.js",
+  "license": "MIT",
+  "author": "Ivan Milovanov <tequila00@yandex.ru>",
+  "dependencies": {
+    "serialport": "^8.0.7",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.6",
+    "@babel/node": "^7.8.4",
+    "@babel/preset-env": "^7.8.6",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-eslint": "^10.1.0",
+    "babel-jest": "^25.1.0",
+    "babel-loader": "^8.0.6",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.1.1",
+    "cross-env": "^7.0.0",
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-babel": "^5.3.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-jest": "^23.8.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "jest": "^25.1.0",
+    "jest-cli": "^25.1.0",
+    "nodemon": "^2.0.2",
+    "superagent": "^5.2.2",
+    "supertest": "^4.0.2",
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11",
+    "webpack-node-externals": "^1.7.2"
+  },
+  "jest": {
+    "testEnviroment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  },
+  "scripts": {
+    "start": "nodemon --exec babel-node src/index.js",
+    "build": "webpack --mode production",
+    "serve": "node dist/index.bundle.js",
+    "lint": "eslint src/",
+    "lint-fix": "eslint --fix src/",
+    "test": "jest"
+  }  
+}
