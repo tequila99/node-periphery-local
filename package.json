@@ -6,7 +6,9 @@
   "license": "MIT",
   "author": "Ivan Milovanov <tequila00@yandex.ru>",
   "dependencies": {
-    "serialport": "^8.0.7",
+    "@serialport/parser-inter-byte-timeout": "^9.0.0",
+    "date-fns": "^2.14.0",
+    "serialport": "^9.0.0",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
@@ -47,9 +49,9 @@
   "scripts": {
     "start": "nodemon --exec babel-node src/index.js",
     "build": "webpack --mode production",
-    "serve": "node dist/index.bundle.js",
+    "serve": "node dist/periphery-local.js",
     "lint": "eslint src/",
     "lint-fix": "eslint --fix src/",
     "test": "jest"
-  }  
+  }
 }

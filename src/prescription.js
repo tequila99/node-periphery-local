@@ -1,3 +1,6 @@
+import { bufferToBinaryString } from './helpers.js'
+import { formatISO } from 'date-fns'
+
 const BARCODE_CONTENT = [
   {
     name: 'hz',
@@ -121,55 +124,28 @@ const BARCODE_CONTENT = [
   }
 ]
 
-const bufferToBinaryString = buf => {
-  let binaryString = ''
-  for (let offset = 0, length = buf.length; offset < length; offset++) {
-    binaryString += buf.readUInt8(offset).toString(2).padStart(8, '0')
-  }
-  return binaryString
-}
+const stringFromBinaryString = str => String.fromCodePoint(...str.split(/([0-1]{8})/).filter(el => el).map(el => parseInt(el,2)).filter(el => el)).trim()
 
-const stringFromBinaryString = str => {
-  let r = []
-  for (let i = 0; i < str.length; i += 8) {
-    let c = parseInt(str.substr(i, 8), 2)
-    c && r.push(c)
-  }
-  return String.fromCodePoint(...r)
-}
-
-const dateFromNumber = ({ year: y, month: m, day: d }) => {
-  return new Date(
-    `20${y.toString().padStart(2, '0')}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`
-  );
-};
-
-const parseString = data => {
-  let binaryString = ''
-  if (Buffer.isBuffer(data)) {
-    binaryString = bufferToBinaryString(data);
-  } else {
-    binaryString = ''
-  }
-  if (!!binaryString) {
-    let [ result, start, _str ] = [ {}, 0, '' ]
-    for (let i = 0; i < BARCODE_CONTENT.length; i++) {
-      _str = binaryString.substr(start, BARCODE_CONTENT[i].length)
-      start += BARCODE_CONTENT[i].length
-      if (BARCODE_CONTENT[i].type === 'Number') {
-        result = { ...result, [BARCODE_CONTENT[i].name]: parseInt(_str, 2) }
-      } else if ((BARCODE_CONTENT[i].type = 'String')) {
-        result = {
-          ...result,
-          [BARCODE_CONTENT[i].name]: stringFromBinaryString(_str)
-        }
-      }
+const dateFromNumber = ({ year, month, day, ...params }) => (
+    {
+      ...params, day, month, year, 
+      date_rcp: formatISO(new Date(2000+year, --month, day)) 
     }
-    return { ...result, date_rcp: dateFromNumber(result) }
-  }
-}
+  )
 
-export default (data) => {
+const parseBinaryString = data => BARCODE_CONTENT.reduce((acc,el) => {
+      if (el.type === 'Number') {
+        acc[0] = { ...acc[0], [el.name]: parseInt(data.substr(acc[1], el.length), 2) }
+      } else if (el.type === 'String') {
+        acc[0] = { ...acc[0], [el.name]: stringFromBinaryString(data.substr(acc[1], el.length)) }
+      }
+      acc[1] += el.length
+      return acc
+    },[{}, 0])[0]
+
+const parseString = data => Buffer.isBuffer(data) ? dateFromNumber(parseBinaryString(bufferToBinaryString(data))) : null
+
+export default data => {
   if (typeof data === 'string') {
     return parseString(Buffer.from(data, 'base64'));
   } else {
