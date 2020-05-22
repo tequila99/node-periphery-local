@@ -109,6 +109,7 @@ class Reader {
               this.socketio && this.socketio.emit('llo_prescrition', parsePrescription(data.toString().trim()))
             } else if (MDLP_REGEXP.test(data.toString().trim())) {
               console.log('Прочитана маркировка лекарственного средства')
+              console.log(parseMdlp(data.toString().trim()))
               this.socketio && this.socketio.emit('mdlp_pack', parseMdlp(data.toString().trim()))
             }
 
