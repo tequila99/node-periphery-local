@@ -31,47 +31,11 @@ const Parser = new InterByteTimeout({interval: 30})
 const PRESCRIPTION_REGEXP = new RegExp(/^p([a-zA-Z0-9\/\+]*==)$/)
 const MDLP_REGEXP = new RegExp(/01\d{14}.*21[!-&%-_/0-9A-Za-z]{13}\u001d/)
 
-const pnpIDParse = pnpId => {
-  // console.log(pnpId)
-  return DEVICES.some(i => {
-    // console.log(pnpId.includes(i.vendor))
-    // console.log(pnpId.includes(i.productid))
-    if (
-      pnpId.includes(i.vendor) &&
-      pnpId.includes(i.productid)
-    ) {
-      return true
-    }
-    return false
-  })
+const pnpIDParse = pnpId => DEVICES.some(i => pnpId.includes(i.vendor) && pnpId.includes(i.productid))
 
-}
-
-const testOfPort = item => {
-  if (
-    'vendorId' in item &&
-    'productId' in item &&
-    !!item.vendorId &&
-    !!item.productId
-  ) {
-    return DEVICES.some(i => {
-      if (
-        item.vendorId.toUpperCase() === i.vendor &&
-        i.productid.includes(item.productId.toUpperCase())
-      ) {
-        return true
-      } else {
-        return false
-      }
-    })
-  } else if ( // если VID и PID не указаны (vendorId: undefined,  productId: undefined), а прописанны в pnpId:  pnpId: 'USB\\VID_0C2E&PID_0CAA&MI_00\\6&23902126&0&0000'
-    item.pnpId &&
-    pnpIDParse(item.pnpId)
-  ) {
-    return true
-  }
-  return false
-}
+const testOfPort = item => (item.vendorId && item.productId) 
+                            ? i.vendor === item.vendorId.toUpperCase() && i.productid.includes(item.productId.toUpperCase())
+                            : item.pnpId && pnpIDParse(item.pnpId)
 
 class Reader {
   constructor(io) {
