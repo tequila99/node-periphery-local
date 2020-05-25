@@ -34,7 +34,7 @@ const MDLP_REGEXP = new RegExp(/01\d{14}.*21[!-&%-_/0-9A-Za-z]{13}\u001d/)
 const pnpIDParse = pnpId => DEVICES.some(i => pnpId.includes(i.vendor) && pnpId.includes(i.productid))
 
 const testOfPort = item => (item.vendorId && item.productId) 
-                            ? i.vendor === item.vendorId.toUpperCase() && i.productid.includes(item.productId.toUpperCase())
+                            ? DEVICES.some(i => i.vendor === item.vendorId.toUpperCase() && i.productid.includes(item.productId.toUpperCase()))
                             : item.pnpId && pnpIDParse(item.pnpId)
 
 class Reader {
