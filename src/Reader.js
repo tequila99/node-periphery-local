@@ -14,6 +14,11 @@ const DEVICES = [
     vendor: '05E0',
     productid: ['1701'],
   },
+  {
+    name: 'NLS-FM430', // http://www.newlandca.com/download/Documents/UserGuide/UM10054_NLS-FM430_User_Guide.pdf
+    vendor: '1EAB',
+    productid: ['1D06'],
+  }
 ]
 
 const TIMEOUT = 10000
@@ -26,26 +31,11 @@ const Parser = new InterByteTimeout({interval: 30})
 const PRESCRIPTION_REGEXP = new RegExp(/^p([a-zA-Z0-9\/\+]*==)$/)
 const MDLP_REGEXP = new RegExp(/01\d{14}.*21[!-&%-_/0-9A-Za-z]{13}\u001d/)
 
-const testOfPort = item => {
-  if (
-    'vendorId' in item &&
-    'productId' in item &&
-    !!item.vendorId &&
-    !!item.productId
-  ) {
-    return DEVICES.some(i => {
-      if (
-        item.vendorId.toUpperCase() === i.vendor &&
-        i.productid.includes(item.productId.toUpperCase())
-      ) {
-        return true
-      } else {
-        return false
-      }
-    })
-  }
-  return false
-}
+const pnpIDParse = pnpId => DEVICES.some(i => pnpId.includes(i.vendor) && pnpId.includes(i.productid))
+
+const testOfPort = item => (item.vendorId && item.productId) 
+                            ? i.vendor === item.vendorId.toUpperCase() && i.productid.includes(item.productId.toUpperCase())
+                            : item.pnpId && pnpIDParse(item.pnpId)
 
 class Reader {
   constructor(io) {
@@ -58,20 +48,21 @@ class Reader {
     this.connected = false
     this.port = null
     this.scanner = null
-    this.timerId =  null    
+    this.timerId =  null
     return this
   }
   async connect() {
     try {
       if (!this.connected) {
         const avaliblePorts = await SerialPort.list()
+        // console.log(avaliblePorts)
         const scannerPort  =  avaliblePorts.find(el => testOfPort(el))
         if (scannerPort) {
           const { manufacturer = '', pnpId = '', path = '' } = scannerPort
           this.port = {
             path,
             manufacturer,
-            id: pnpId,          
+            id: pnpId,
           }
           this.scanner = new SerialPort(path)
           this.scanner.pipe(Parser)
@@ -96,7 +87,7 @@ class Reader {
               id: '',
             }
             this.scanner = null
-            this.timerId && clearTimeout(this.timerId) 
+            this.timerId && clearTimeout(this.timerId)
             this.timerId = setTimeout(() => this.connect(), TIMEOUT)
           })
           Parser.on('data', data => {
@@ -124,7 +115,5 @@ class Reader {
     }
   }
 }
-
-
 
 export default io => new Reader(io)
