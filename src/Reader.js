@@ -4,11 +4,12 @@ import InterByteTimeout  from '@serialport/parser-inter-byte-timeout'
 import parsePrescription from './prescription'
 import parseMdlp from './mdlp'
 import parseOMC from './omc'
+import parseSscc from './sscc'
 
 const DEVICES = [
   {
     vendor: '0C2E',
-    productid: ['0CAA'],
+    productid: ['0CAA', '0CD4'],
   },
   {
     vendor: '05E0',
@@ -18,7 +19,7 @@ const DEVICES = [
     name: 'NLS-FM430', // http://www.newlandca.com/download/Documents/UserGuide/UM10054_NLS-FM430_User_Guide.pdf
     vendor: '1EAB',
     productid: ['1D06'],
-  }
+  },
 ]
 
 const TIMEOUT = 10000
@@ -30,6 +31,8 @@ const Parser = new InterByteTimeout({interval: 30})
 
 const PRESCRIPTION_REGEXP = new RegExp(/^p([a-zA-Z0-9\/\+]*==)$/)
 const MDLP_REGEXP = new RegExp(/01\d{14}.*21[!-&%-_/0-9A-Za-z]{13}\u001d/)
+const EAN13_REGEXP = new RegExp(/^[0-9]{13}$/)
+const SSCC_REGEXP = new RegExp(/^[0-9]{18,20}$/)
 
 const pnpIDParse = pnpId => DEVICES.some(i => pnpId.includes(i.vendor) && pnpId.includes(i.productid))
 
@@ -91,6 +94,7 @@ class Reader {
             this.timerId = setTimeout(() => this.connect(), TIMEOUT)
           })
           Parser.on('data', data => {
+            console.log(data)
             if (data.readUInt8(0) === 2) {
               console.log('Прочитан полис ОМС')
               console.log(parseOMC(data))
@@ -100,8 +104,14 @@ class Reader {
               this.socketio && this.socketio.emit('llo_prescrition', parsePrescription(data.toString().trim()))
             } else if (MDLP_REGEXP.test(data.toString().trim())) {
               console.log('Прочитана маркировка лекарственного средства')
-              console.log(parseMdlp(data.toString().trim()))
-              this.socketio && this.socketio.emit('mdlp_pack', parseMdlp(data.toString().trim()))
+              console.log(parseMdlp(data))
+              this.socketio && this.socketio.emit('mdlp_pack', parseMdlp(data))
+            } else if (EAN13_REGEXP.test(data.toString().trim())) {
+              console.log('Прочитан потребительский штрих код товара')
+              this.socketio && this.socketio.emit('ean13', { ean13: data.toString().trim() })
+            } else if (SSCC_REGEXP.test(data.toString().trim())) {
+              console.log('Прочитан код групповой упаковки')
+              this.socketio && this.socketio.emit('sscc', parseSscc(data.toString().trim()))
             }
 
           })

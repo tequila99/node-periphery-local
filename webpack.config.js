@@ -1,14 +1,14 @@
 const path = require('path')
 const webpack = require('webpack')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-const CopyPlugin = require('copy-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
 const nodeExternals = require('webpack-node-externals')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
-  entry: [
-    'regenerator-runtime/runtime',
+  entry: [    
     './src/index.js'
-  ],
+  ],  
   target: 'node',
   node: {
     __dirname: false
@@ -32,9 +32,9 @@ module.exports = {
   plugins: [
     new webpack.ProgressPlugin(),
     new CleanWebpackPlugin(),
-    new CopyPlugin([
-      { from: './public', to: 'public' },
-      { from: './uploads', to: 'uploads' }
-    ])
+    new webpack.IgnorePlugin( /uws/ ),
+    new CopyWebpackPlugin([
+      { from: 'node_modules/serialport/build/Release/serialport.node', to: 'dist/' }
+    ]),
   ]
 }
