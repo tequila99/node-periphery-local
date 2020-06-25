@@ -36,7 +36,7 @@ const SSCC_REGEXP = new RegExp(/^[0-9]{18,20}$/)
 
 const pnpIDParse = pnpId => DEVICES.some(i => pnpId.includes(i.vendor) && pnpId.includes(i.productid))
 
-const testOfPort = item => (item.vendorId && item.productId) 
+const testOfPort = item => (item.vendorId && item.productId)
                             ? DEVICES.some(i => i.vendor === item.vendorId.toUpperCase() && i.productid.includes(item.productId.toUpperCase()))
                             : item.pnpId && pnpIDParse(item.pnpId)
 
@@ -98,6 +98,7 @@ class Reader {
             if (data.readUInt8(0) === 2) {
               console.log('Прочитан полис ОМС')
               console.log(parseOMC(data))
+              this.socketio && this.socketio.emit('OMS', JSON.stringify(parseOMC(data)))
             } else if (PRESCRIPTION_REGEXP.test(data.toString().trim())) {
               console.log('Прочитан льготный рецепт')
               console.log(parsePrescription(data.toString().trim()))
