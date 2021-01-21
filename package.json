@@ -9,7 +9,7 @@
     "@serialport/parser-inter-byte-timeout": "^9.0.0",
     "date-fns": "^2.14.0",
     "serialport": "^9.0.0",
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.4.0",
     "nfc-pcsc": "^0.8.0"
   },
   "devDependencies": {
